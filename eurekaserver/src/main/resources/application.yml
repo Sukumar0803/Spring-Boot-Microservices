@@ -1,0 +1,32 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: eureka-svc
+
+  config:
+    import: vault://
+  cloud:
+    vault:
+      host: localhost
+      port: 8200
+      scheme: http
+      uri: http://localhost:8200
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: /
+      connection-timeout: 5000
+      read-timeout: 15000
+      token: hvs.lcvGCp7DgmekkDMhodYaPpai
+
+eureka:
+  instance:
+    hostname: localhost
+
+  client:
+    fetch-registry: false
+    register-with-eureka: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/

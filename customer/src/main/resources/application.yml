@@ -1,0 +1,79 @@
+spring:
+    application:
+        name: customer-svc
+    data:
+        mongodb:
+            username: admin
+            password: admin
+            host: localhost
+            port: 27017
+            authentication-database: admin
+            database: customerdb
+
+    config:
+        import: vault://
+    cloud:
+        vault:
+            host: localhost
+            port: 8200
+            scheme: http
+            uri: http://localhost:8200
+            kv:
+                enabled: true
+                backend: secret
+                profile-separator: /
+            connection-timeout: 5000
+            read-timeout: 15000
+            token: hvs.lcvGCp7DgmekkDMhodYaPpai
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
+    health:
+        readiness-state:
+            enabled: true
+        liveness-state:
+            enabled: true
+    endpoint:
+        shutdown:
+            enabled: true
+        health:
+            probes:
+                enabled: true
+    info:
+        env:
+            enabled: true
+    metrics:
+        tags:
+            application: ${spring.application.name}
+
+logging:
+    level:
+      com:
+          microservices:
+              customer:
+                  CustomerSvcApplication: INFO
+eureka:
+    instance:
+        preferIpAddress: true
+    client:
+        fetchRegistry: true
+        registerWithEureka: true
+        serviceUrl:
+            defaultZone: http://localhost:9000/eureka/
+
+springdoc:
+    version: '@springdoc.version@'
+    cache:
+        disabled: true
+    api-docs:
+        version: OPENAPI_3_0
+        enabled: true
+    swagger-ui:
+        config-url: /v3/api-docs/swagger-config
+        url: /v3/api-docs
+server:
+    port: 8080
+    forward-headers-strategy: framework

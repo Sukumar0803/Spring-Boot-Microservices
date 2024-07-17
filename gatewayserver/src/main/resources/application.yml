@@ -1,0 +1,77 @@
+server:
+  port: 8060
+  forward-headers-strategy: framework
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:9000/eureka/
+  instance:
+    preferIpAddress: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} %m%n"
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: TRACE
+
+spring:
+  profiles:
+    active: test
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://localhost:7080/realms/master/protocol/openid-connect/certs"
+
+  config:
+    import: vault://
+
+  cloud:
+    # Gateway Related Configuration
+    gateway:
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 10s # Will Get Gateway Timeout once API crossed 10 seconds
+      routes:
+        - id: customer-svc
+          uri: lb://customer-svc
+          predicates:
+            - Path=/customer-svc/**
+          filters:
+            - ContextPathRewritePath=/customer-svc/(?<path>.*), /$\{path}
+            - RewritePath=/customer-svc/(?<path>.*), /$\{path}
+        - id: openapi
+          uri: http://localhost:${server.port}
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<path>.*), /$\{path}/v3/api-docs
+
+
+    # Vault Related Configuration
+    vault:
+      host: localhost
+      port: 8200
+      scheme: http
+      uri: http://localhost:8200
+      kv:
+        enabled: true
+        backend: secret
+        profile-separator: /
+      connection-timeout: 5000
+      read-timeout: 15000
+      token: hvs.lcvGCp7DgmekkDMhodYaPpai
+  application:
+    name: gateway-service
+
+springdoc:
+  version: '@springdoc.version@'
+  cache:
+    disabled: true
+  swagger-ui:
+    use-root-path: true
+  api-docs:
+    version: OPENAPI_3_0
